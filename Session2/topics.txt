@@ -1,0 +1,4 @@
+1) Discuss RPS solutions
+	- use 'case' instead of 'if'
+
+2) lists:foldl(Fun, Acc, List). 

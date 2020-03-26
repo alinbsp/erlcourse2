@@ -1,0 +1,25 @@
+1) Mnesia, Ets (brief introduction)
+	- Examples:
+		- ets:tab2list(table)
+		- mnesia:read(table,key)
+		- dbutils:fragmented_transaction(fun() -> mnesia:read(table,{composite,key}) end)
+	- Sources:
+		- https://erlang.org/doc/man/mnesia.html
+		- https://erlang.org/doc/man/ets.html
+
+2) Shell Commands (rr, rp, l, nl)
+	- How to load a module without disconnecting from a node
+	- How to load a record definition
+	- Sources: https://erlang.org/doc/man/shell.html#shell-commands
+
+3) Processes
+	- self(), !, is_pid(), list_to_pid/1  
+	- spawn(fun() -> receive R -> file:write_file("somewhere.txt", R)  end end).
+	- Sources: https://erlang.org/doc/reference_manual/processes.html
+
+Further readings / TODO :
+	- Tracing and debugging with Redbug (setup + small functioning example of a function call trace)
+		- documentation: 
+				https://massemanet.github.io/eper/redbug 
+				https://robertoaloi.github.io/erlang/profiling-erlang-applications-using-redbug
+	- Research gen_server
