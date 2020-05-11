@@ -1,6 +1,12 @@
 Instructions:
 =============
 
+For ubuntu:
+
+sudo apt-get install erlang-base
+sudo apt-get install erlang-inets
+chmod +X ./rebar
+
 make all
 make app
 ./start-dev.sh
