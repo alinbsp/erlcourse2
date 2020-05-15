@@ -56,5 +56,5 @@ record_to_proplist(#foo{} = Rec) ->
 -define(R2P(Record), record_to_proplist(#Record{} = Rec) ->
            lists:zip(record_info(fields, Record), tl(tuple_to_list(Rec)))).
 
-?R2P(foobar);
+?R2P(foobar).
 ?R2P(foo).
