@@ -21,6 +21,71 @@ start(Options) ->
 stop() ->
     mochiweb_http:stop(?MODULE).
 
+%Erlang data structures to JSON
+
+to_json(Int) when is_integer(Int) ->
+    integer_to_list(Int);
+
+to_json(Float) when is_float(Float) ->
+    float_to_list(Float);
+
+to_json(Atom) when is_atom(Atom) -> 
+    to_json(atom_to_binary(Atom, latin1));
+
+to_json(Bin) when is_binary(Bin) ->
+    to_json_key(Bin);
+
+to_json(Proplist = [{_,_}|_]) ->
+    to_json_prop(Proplist);
+
+to_json(List = [_|_]) ->
+    to_json_list(List);
+
+to_json(Tuple) when is_tuple(Tuple) ->
+    to_json(tuple_to_list(Tuple));
+
+to_json(Map) when is_map(Map) ->
+    to_json_prop(maps:to_list(Map)). 
+
+to_json_key(Int) when is_integer(Int) ->
+    [$\", integer_to_list(Int), $\"];
+
+to_json_key(Float) when is_float(Float) ->
+    [$\", float_to_list(Float), $\"];
+
+to_json_key(Atom) when is_atom(Atom) -> 
+    to_json(atom_to_binary(Atom, latin1));
+
+to_json_key(Bin) when is_binary(Bin) ->
+    [$\", binary_to_list(Bin), $\"].
+
+%to_json_key(Proplist = [{_,_}|_]) ->
+%    [$\", Proplist, $\"];
+
+%to_json_key(List = [_|_]) ->
+%    [$\", List, $\"];
+
+%to_json_key(Tuple) when is_tuple(Tuple) ->
+%    to_json_key(tuple_to_list(Tuple)).
+
+
+to_json_prop(L) -> to_json_prop(L, []).
+to_json_prop([], Acc) -> [${, Acc, $}];
+to_json_prop([{K,V}|T], Acc) when length(T) =/= 0 -> 
+    to_json_prop(T, Acc ++ [to_json_key(K), $:, to_json(V), $,]);
+to_json_prop([{K,V}|T], Acc) when length(T) =:= 0 -> 
+    to_json_prop(T, Acc ++ [to_json_key(K), $:, to_json(V)]).
+
+to_json_list(L) -> to_json_list(L, []).
+to_json_list([], Acc) -> [$[, Acc, $]];
+to_json_list([H|T], Acc) when length(T) =/= 0 ->
+    to_json_list(T, Acc ++ [to_json(H), $,]);
+to_json_list([H|T], Acc) when length(T) =:= 0 ->
+    to_json_list(T, Acc ++ [to_json(H)]).
+
+rec2json(#account{id=Id, details=#accountDetails{name=Name, balance=Balance, pin=Pin}}) ->
+    to_json([{id,Id},{name, Name}, {balance, Balance}, {pin, Pin}]).
+
 loop(Req, DocRoot) ->
     "/" ++ Path = Req:get(path),
     try
@@ -29,6 +94,8 @@ loop(Req, DocRoot) ->
                 case Path of
                   "hello_world" ->
                         Req:respond({200, [{"Content-Type", "text/plain"}], "Hello world!\n"});
+                  "test_toJson" ->
+                        Req:respond({200, [{"Content-Type", "text/plain"}], to_json([{<<"key">>, value}, {key2, 2}, {22, [123,atom]}])});  
 		          "getBalance" ->
 	                    Accounts = mochiglobal:get(accounts),
 		                Req:respond({200, [{"Content-Type", "text/plain"}], "{\"Balance\": 100}\n"});
