@@ -2,23 +2,22 @@
 
 -module(ebank_web).
 -compile(tuple_calls).
+-include_lib("include/account.hrl").
 
 -export([start/1, stop/0, loop/2]).
 
 %% External API
-
-
--record(accountDetails, {name, balance, pin}).
--record(account, {id, details=accountDetails#{}}).
 
 start(Options) ->
     {DocRoot, Options1} = get_option(docroot, Options),
     Loop = fun (Req) ->
                    ?MODULE:loop(Req, DocRoot)
            end,
+    mnesia:start(),        
     mochiweb_http:start([{name, ?MODULE}, {loop, Loop} | Options1]).
 
 stop() ->
+    mnesia:stop(),
     mochiweb_http:stop(?MODULE).
 
 %Erlang data structures to JSON
@@ -110,10 +109,9 @@ loop(Req, DocRoot) ->
                         QueryKeys = proplists:get_keys(QueryData),
                         [Id, Name, Balance, Pin] = lists:map(fun(X) -> proplists:get_value(X, QueryData) end, QueryKeys),
                         Adet = #accountDetails{name=Name, balance=Balance, pin=Pin},
-                            Account = #account{id=Id, details=Adet},
-                        Accounts = mochiglobal:get(accounts),
-                        NewAccounts = [Account|Accounts],
-                        mochiglobal:put(accounts, Account);
+                        Account = #account{id=Id, details=Adet},
+                        ResponseStatus = save_account(Account),
+                        Req:respond({200, [{"Content-Type", "text/plain"}], "{\"Status\": Ok}\n"});
                     _ ->
                         Req:not_found()
                 end;
@@ -132,6 +130,10 @@ loop(Req, DocRoot) ->
     end.
 
 %% Internal API
+
+save_account(Account) ->
+   {atomic, Res} = mnesia:transaction(fun() -> mnesia:write(Account) end),
+   Res.
 
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.

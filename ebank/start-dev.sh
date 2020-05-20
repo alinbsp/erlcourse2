@@ -4,4 +4,5 @@ exec erl \
     -boot start_sasl \
     -sname ebank_dev \
     -s ebank \
-    -s reloader
+    -s reloader \
+    -mnesia dir 'data'

@@ -1,0 +1,2 @@
+1) finnish the create record implementation
+2) implement getBalance using mnesia data persistence | argument can be id or name
